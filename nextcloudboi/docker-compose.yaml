@@ -1,0 +1,56 @@
+version: '2'
+
+volumes:
+  nextcloud:
+  db:
+
+services:
+  db:
+    image: mariadb:10.5
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootroot
+      - MYSQL_PASSWORD=nextnext
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      wpn:
+        ipv4_address: 5.10.5.20
+  app:
+    image: nextcloud
+    restart: always
+    ports:
+      - 8080:80
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=nextnext
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+    networks:
+      wpn:
+        ipv4_address: 5.10.5.30
+
+  cloudflared:
+    image: "cloudflare/cloudflared:latest"
+    command: tunnel --no-autoupdate run --token #TOKEN
+    restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      wpn:
+        ipv4_address: 5.10.5.40
+
+networks:
+  wpn:
+    ipam:
+      driver: default
+      config:
+        - subnet: 5.10.5.0/24
+

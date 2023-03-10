@@ -19,7 +19,7 @@ services:
     networks:
       wpn:
         ipv4_address: 5.10.5.20
-  app:
+  nc:
     image: nextcloud
     restart: always
     ports:
@@ -42,7 +42,7 @@ services:
     command: tunnel --no-autoupdate run --token #TOKEN
     restart: unless-stopped
     depends_on:
-      - app
+      - nc
     networks:
       wpn:
         ipv4_address: 5.10.5.40
